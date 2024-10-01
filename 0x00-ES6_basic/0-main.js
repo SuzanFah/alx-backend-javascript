@@ -1,3 +1,11 @@
-import { taskFirst, taskNext } from './0-constants.js';
+// 0-main.js
+function taskBlock(isTrue) {
+  if (isTrue) {
+    const task = [true, false];
+    return task;
+  }
+  return [false, true];
+}
 
-console.log(`${taskFirst()} ${taskNext()}`);
+module.exports = taskBlock;
+
