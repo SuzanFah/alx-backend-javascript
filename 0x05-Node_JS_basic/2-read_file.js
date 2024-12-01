@@ -2,23 +2,26 @@ const fs = require('fs');
 
 function countStudents(path) {
   try {
-    const fileContent = fs.readFileSync(path, 'utf8');
-    const lines = fileContent.trim().split('\n');
-    const studentData = lines.slice(1).filter(line => line);
+    // Read file synchronously
+    const data = fs.readFileSync(path, 'utf8');
     
-    const csStudents = [];
-    const sweStudents = [];
+    // Split into lines and remove empty lines
+    const lines = data.split('\n').filter(line => line.length > 0);
     
-    studentData.forEach(student => {
-      const [firstName, , , field] = student.split(',');
-      if (field === 'CS') csStudents.push(firstName);
-      if (field === 'SWE') sweStudents.push(firstName);
-    });
-
-    console.log(`Number of students: ${studentData.length}`);
+    // Remove header and get students
+    const students = lines.slice(1);
+    
+    // Count total students
+    console.log(`Number of students: ${students.length}`);
+    
+    // Group by field
+    const csStudents = students.filter(student => student.endsWith('CS')).map(student => student.split(',')[0]);
+    const sweStudents = students.filter(student => student.endsWith('SWE')).map(student => student.split(',')[0]);
+    
+    // Print results
     console.log(`Number of students in CS: ${csStudents.length}. List: ${csStudents.join(', ')}`);
     console.log(`Number of students in SWE: ${sweStudents.length}. List: ${sweStudents.join(', ')}`);
-  } catch (err) {
+  } catch (error) {
     throw new Error('Cannot load the database');
   }
 }
