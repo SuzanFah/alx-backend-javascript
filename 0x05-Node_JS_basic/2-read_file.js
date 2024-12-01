@@ -2,25 +2,33 @@ const fs = require('fs');
 
 function countStudents(path) {
   try {
-    // Read file synchronously
     const data = fs.readFileSync(path, 'utf8');
-    
-    // Split into lines and remove empty lines
-    const lines = data.split('\n').filter(line => line.length > 0);
-    
-    // Remove header and get students
-    const students = lines.slice(1);
-    
-    // Count total students
-    console.log(`Number of students: ${students.length}`);
-    
-    // Group by field
-    const csStudents = students.filter(student => student.endsWith('CS')).map(student => student.split(',')[0]);
-    const sweStudents = students.filter(student => student.endsWith('SWE')).map(student => student.split(',')[0]);
-    
-    // Print results
-    console.log(`Number of students in CS: ${csStudents.length}. List: ${csStudents.join(', ')}`);
-    console.log(`Number of students in SWE: ${sweStudents.length}. List: ${sweStudents.join(', ')}`);
+    const lines = data.toString().split('\n');
+    const studentGroups = {};
+    const fieldNames = lines[0].split(',');
+    const studentPropNames = fieldNames.slice(0);
+    const studentsList = lines.slice(1).filter((item) => item);
+
+    for (const line of studentsList) {
+      const studentRecord = line.split(',');
+      const studentPropValues = studentRecord.slice(0);
+      const field = studentPropValues[studentPropValues.length - 1];
+      if (!studentGroups[field]) {
+        studentGroups[field] = [];
+      }
+      const studentEntries = studentPropNames
+        .map((propName, idx) => [propName, studentPropValues[idx]]);
+      studentGroups[field].push(Object.fromEntries(studentEntries));
+    }
+
+    const totalStudents = Object
+      .values(studentGroups)
+      .reduce((pre, cur) => (pre || []).length + cur.length);
+    console.log(`Number of students: ${totalStudents}`);
+    for (const [field, group] of Object.entries(studentGroups)) {
+      const studentNames = group.map((student) => student.firstname).join(', ');
+      console.log(`Number of students in ${field}: ${group.length}. List: ${studentNames}`);
+    }
   } catch (error) {
     throw new Error('Cannot load the database');
   }
