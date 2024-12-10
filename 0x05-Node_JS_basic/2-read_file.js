@@ -2,32 +2,35 @@ const fs = require('fs');
 
 function countStudents(path) {
   try {
+    // Read file synchronously
     const data = fs.readFileSync(path, 'utf8');
-    const lines = data.toString().split('\n');
-    const studentGroups = {};
-    const fieldNames = lines[0].split(',');
-    const studentPropNames = fieldNames.slice(0);
-    const studentsList = lines.slice(1).filter((item) => item);
-
-    for (const line of studentsList) {
-      const studentRecord = line.split(',');
-      const studentPropValues = studentRecord.slice(0);
-      const field = studentPropValues[studentPropValues.length - 1];
-      if (!studentGroups[field]) {
-        studentGroups[field] = [];
+    
+    // Split data into lines and filter out empty lines
+    const lines = data.split('\n').filter(line => line.length > 0);
+    
+    // Remove header
+    const students = lines.slice(1);
+    
+    console.log(`Number of students: ${students.length}`);
+    
+    // Group students by field
+    const fields = {};
+    students.forEach(student => {
+      const [firstname, , , field] = student.split(',');
+      if (!fields[field]) {
+        fields[field] = {
+          count: 1,
+          students: [firstname]
+        };
+      } else {
+        fields[field].count += 1;
+        fields[field].students.push(firstname);
       }
-      const studentEntries = studentPropNames
-        .map((propName, idx) => [propName, studentPropValues[idx]]);
-      studentGroups[field].push(Object.fromEntries(studentEntries));
-    }
-
-    const totalStudents = Object
-      .values(studentGroups)
-      .reduce((pre, cur) => (pre || []).length + cur.length);
-    console.log(`Number of students: ${totalStudents}`);
-    for (const [field, group] of Object.entries(studentGroups)) {
-      const studentNames = group.map((student) => student.firstname).join(', ');
-      console.log(`Number of students in ${field}: ${group.length}. List: ${studentNames}`);
+    });
+    
+    // Print results for each field
+    for (const [field, data] of Object.entries(fields)) {
+      console.log(`Number of students in ${field}: ${data.count}. List: ${data.students.join(', ')}`);
     }
   } catch (error) {
     throw new Error('Cannot load the database');
